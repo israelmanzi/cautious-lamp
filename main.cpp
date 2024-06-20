@@ -2,167 +2,420 @@
 #include <string>
 using namespace std;
 
-struct Patient
+// Function to validate date format (yyyy-mm-dd)
+bool validateDate(const string &date)
 {
-	int id;
-	string name;
-	string dob;
-	char gender;
+	if (date.length() != 10 || date[4] != '-' || date[7] != '-')
+	{
+		return false;
+	}
+	return true;
+}
+
+// Function to display the main menu
+void displayMenu()
+{
+	cout << "::MAIN MENU::" << endl;
+	cout << "1. Register a Patient" << endl;
+	cout << "2. Register a Doctor" << endl;
+	cout << "3. Register an Appointment" << endl;
+	cout << "4. Display Patients" << endl;
+	cout << "5. Display Doctors" << endl;
+	cout << "6. Display Appointments" << endl;
+	cout << "7. Exit" << endl;
+}
+
+// Class representing an appointment
+class Appointment
+{
+public:
+	int appointmentID;
+	int patientID;
+	int doctorID;
+	string appointmentDate;
+
+	// Default constructor
+	Appointment() : appointmentID(0), patientID(0), doctorID(0), appointmentDate("default") {}
+
+	// Parameterized constructor
+	Appointment(int id, int pID, int dID, const string &date)
+		: appointmentID(id), patientID(pID), doctorID(dID), appointmentDate(date) {}
 };
 
-struct Doctor
+// Class representing a doctor
+class Doctor
 {
-	int id;
+public:
+	int doctorID;
 	string name;
 	string specialization;
+
+	// Default constructor
+	Doctor() : doctorID(0), name("default"), specialization("default") {}
+
+	// Parameterized constructor
+	Doctor(int id, const string &docName, const string &docSpecialization)
+		: doctorID(id), name(docName), specialization(docSpecialization) {}
 };
 
-struct Appointment
+// Class representing a patient
+class Patient
 {
-	int id;
-	int patient;
-	int doctor;
-	string date;
-};
-
-// A template class for creating a generic linked list
-template <typename T>
-class LinkedList
-{
-private:
-	struct Node
-	{
-		T data;
-		Node *next;
-	};
-
 public:
-	// Constructor
-	LinkedList() : head(nullptr) {}
+	int patientID;
+	string name;
+	string dateOfBirth;
+	string gender;
 
-	~LinkedList()
+	// Default constructor
+	Patient() : patientID(0), name("default"), dateOfBirth("default"), gender("default") {}
+
+	// Parameterized constructor
+	Patient(int id, const string &patName, const string &dob, const string &patGender)
+		: patientID(id), name(patName), dateOfBirth(dob), gender(patGender) {}
+};
+
+// Linked list node for patients
+class PatientNode
+{
+public:
+	Patient patient;
+	PatientNode *next;
+
+	// Default constructor
+	PatientNode() : patient(), next(nullptr) {}
+
+	// Parameterized constructor
+	PatientNode(const Patient &pat) : patient(pat), next(nullptr) {}
+
+	// Function to add a patient to the list
+	PatientNode *addPatient(const Patient &pat)
 	{
-		while (head != nullptr)
+		PatientNode *currentNode = this;
+		while (currentNode != nullptr)
 		{
-			Node *temp = head;
-			head = head->next;
-			delete temp;
-		}
-	}
-
-	// Function to add a new node at the end of the list
-	void add(T data)
-	{
-		Node *newNode = new Node();
-		newNode->data = data;
-		newNode->next = nullptr;
-
-		if (head == nullptr)
-		{
-			head = newNode;
-		}
-		else
-		{
-			Node *current = head;
-			while (current->next != nullptr)
+			if (currentNode->patient.patientID == pat.patientID)
 			{
-				current = current->next;
+				cout << "Patient with ID " << pat.patientID << " already exists" << endl;
+				return nullptr;
 			}
-			current->next = newNode;
+			currentNode = currentNode->next;
 		}
+
+		PatientNode *newNode = new PatientNode(pat);
+		if (this->patient.patientID == 0)
+		{
+			this->patient = pat;
+			return this;
+		}
+
+		PatientNode *temp = this;
+		while (temp->next != nullptr)
+		{
+			temp = temp->next;
+		}
+		temp->next = newNode;
+		return newNode;
 	}
 
-private:
-	Node *head;
+	// Function to display all patients
+	void displayPatients()
+	{
+		cout << endl
+			 << "PATIENTS" << endl;
+		PatientNode *currentNode = this;
+		if (currentNode->patient.patientID == 0)
+		{
+			cout << "No Patients available" << endl;
+			return;
+		}
+		while (currentNode != nullptr)
+		{
+			cout << "Patient ID: " << currentNode->patient.patientID << ", "
+				 << "Name: " << currentNode->patient.name << ", "
+				 << "Date of Birth: " << currentNode->patient.dateOfBirth << ", "
+				 << "Gender: " << currentNode->patient.gender << endl;
+			currentNode = currentNode->next;
+		}
+		cout << endl;
+	}
+
+	// Function to search for a patient by ID
+	PatientNode *searchPatient(int patID)
+	{
+		PatientNode *currentNode = this;
+		while (currentNode != nullptr)
+		{
+			if (currentNode->patient.patientID == patID)
+			{
+				return currentNode;
+			}
+			currentNode = currentNode->next;
+		}
+		return nullptr;
+	}
+};
+
+// Linked list node for doctors
+class DoctorNode
+{
+public:
+	Doctor doctor;
+	DoctorNode *next;
+
+	// Default constructor
+	DoctorNode() : doctor(), next(nullptr) {}
+
+	// Parameterized constructor
+	DoctorNode(const Doctor &doc) : doctor(doc), next(nullptr) {}
+
+	// Function to add a doctor to the list
+	DoctorNode *addDoctor(const Doctor &doc)
+	{
+		DoctorNode *currentNode = this;
+		while (currentNode != nullptr)
+		{
+			if (currentNode->doctor.doctorID == doc.doctorID)
+			{
+				cout << "Doctor with ID " << doc.doctorID << " already exists" << endl;
+				return nullptr;
+			}
+			currentNode = currentNode->next;
+		}
+
+		DoctorNode *newNode = new DoctorNode(doc);
+		if (this->doctor.doctorID == 0)
+		{
+			this->doctor = doc;
+			return this;
+		}
+
+		DoctorNode *temp = this;
+		while (temp->next != nullptr)
+		{
+			temp = temp->next;
+		}
+		temp->next = newNode;
+		return this;
+	}
+
+	// Function to display all doctors
+	void displayDoctors()
+	{
+		cout << endl
+			 << "DOCTORS" << endl;
+		DoctorNode *currentNode = this;
+		if (currentNode->doctor.doctorID == 0)
+		{
+			cout << "No Doctors available" << endl;
+			return;
+		}
+		while (currentNode != nullptr)
+		{
+			cout << "Doctor ID: " << currentNode->doctor.doctorID << ", "
+				 << "Name: " << currentNode->doctor.name << ", "
+				 << "Specialization: " << currentNode->doctor.specialization << endl;
+			currentNode = currentNode->next;
+		}
+		cout << endl;
+	}
+
+	// Function to search for a doctor by ID
+	DoctorNode *searchDoctor(int docID)
+	{
+		DoctorNode *currentNode = this;
+		while (currentNode != nullptr)
+		{
+			if (currentNode->doctor.doctorID == docID)
+			{
+				return currentNode;
+			}
+			currentNode = currentNode->next;
+		}
+		return nullptr;
+	}
+};
+
+// Linked list node for appointments
+class AppointmentNode
+{
+public:
+	Appointment appointment;
+	AppointmentNode *next;
+
+	// Default constructor
+	AppointmentNode() : appointment(), next(nullptr) {}
+
+	// Parameterized constructor
+	AppointmentNode(const Appointment &apt) : appointment(apt), next(nullptr) {}
+
+	// Function to search for a doctor by ID
+	DoctorNode *searchDoctor(int docID, DoctorNode *docHead)
+	{
+		return docHead->searchDoctor(docID);
+	}
+
+	// Function to search for a patient by ID
+	PatientNode *searchPatient(int patID, PatientNode *patHead)
+	{
+		return patHead->searchPatient(patID);
+	}
+
+	// Function to add an appointment to the list
+	AppointmentNode *addAppointment(const Appointment &apt, DoctorNode *docHead, PatientNode *patHead)
+	{
+		AppointmentNode *currentNode = this;
+		while (currentNode != nullptr)
+		{
+			if (currentNode->appointment.appointmentID == apt.appointmentID)
+			{
+				cout << "Appointment with ID " << apt.appointmentID << " already exists" << endl;
+				return nullptr;
+			}
+			currentNode = currentNode->next;
+		}
+
+		DoctorNode *doc = searchDoctor(apt.doctorID, docHead);
+		if (doc == nullptr)
+		{
+			cout << "Doctor with ID " << apt.doctorID << " does not exist" << endl;
+			return nullptr;
+		}
+
+		PatientNode *pat = searchPatient(apt.patientID, patHead);
+		if (pat == nullptr)
+		{
+			cout << "Patient with ID " << apt.patientID << " does not exist" << endl;
+			return nullptr;
+		}
+
+		AppointmentNode *newNode = new AppointmentNode(apt);
+		if (this->appointment.appointmentID == 0)
+		{
+			this->appointment = apt;
+			return this;
+		}
+
+		AppointmentNode *temp = this;
+		while (temp->next != nullptr)
+		{
+			temp = temp->next;
+		}
+		temp->next = newNode;
+		return this;
+	}
+
+	// Function to display all appointments
+	void displayAppointments()
+	{
+		cout << endl
+			 << "APPOINTMENTS" << endl;
+		AppointmentNode *currentNode = this;
+		if (currentNode->appointment.appointmentID == 0)
+		{
+			cout << "No Appointments available" << endl;
+			return;
+		}
+		while (currentNode != nullptr)
+		{
+			cout << "Appointment ID: " << currentNode->appointment.appointmentID << ", "
+				 << "Doctor ID: " << currentNode->appointment.doctorID << ", "
+				 << "Patient ID: " << currentNode->appointment.patientID << ", "
+				 << "Date: " << currentNode->appointment.appointmentDate << endl;
+			currentNode = currentNode->next;
+		}
+		cout << endl;
+	}
 };
 
 int main()
 {
-	// Create a linked list to store patients
-	LinkedList<Patient> patientList;
-	LinkedList<Doctor> doctorList;
-	LinkedList<Appointment> appointmentList;
+	int choice;
+	PatientNode *patientList = new PatientNode();
+	DoctorNode *doctorList = new DoctorNode();
+	AppointmentNode *appointmentList = new AppointmentNode();
 
-	while (true)
+	do
 	{
-		// Display the menu
-		cout << "1. Register a patient" << endl;
-		cout << "2. Register a doctor" << endl;
-		cout << "3. Register an appointment" << endl;
-		cout << "4. Display patients" << endl;
-		cout << "5. Display doctors" << endl;
-		cout << "6. Display appointments" << endl;
-		cout << "7. Exit" << endl;
-
-		int choice;
+		displayMenu();
 		cout << "Enter your choice: ";
 		cin >> choice;
 
-		cout << endl;
-
-		// Process the user's choice
 		switch (choice)
 		{
 		case 1:
 		{
-			Patient newPatient;
+			int id;
+			string name, dob, gender;
 			cout << "Enter patient ID: ";
-			cin >> newPatient.id;
+			cin >> id;
 			cout << "Enter patient name: ";
-			cin.ignore(); // Ignore the newline character
-			getline(cin, newPatient.name);
-			cout << "Enter patient DOB: ";
-			cin >> newPatient.dob;
-			cout << "Enter patient gender (M/F): ";
-			cin >> newPatient.gender;
-
-			patientList.add(newPatient);
+			cin >> name;
+			cout << "Enter patient date of birth (yyyy-mm-dd): ";
+			cin >> dob;
+			while (!validateDate(dob))
+			{
+				cout << "Invalid date format. Please enter again (yyyy-mm-dd): ";
+				cin >> dob;
+			}
+			cout << "Enter patient gender: ";
+			cin >> gender;
+			Patient newPatient(id, name, dob, gender);
+			patientList->addPatient(newPatient);
 			break;
 		}
 		case 2:
 		{
-			Doctor newDoctor;
+			int id;
+			string name, specialization;
 			cout << "Enter doctor ID: ";
-			cin >> newDoctor.id;
+			cin >> id;
 			cout << "Enter doctor name: ";
-			cin.ignore(); // Ignore the newline character
-			getline(cin, newDoctor.name);
+			cin >> name;
 			cout << "Enter doctor specialization: ";
-			cin >> newDoctor.specialization;
-
-			doctorList.add(newDoctor);
+			cin >> specialization;
+			Doctor newDoctor(id, name, specialization);
+			doctorList->addDoctor(newDoctor);
 			break;
 		}
 		case 3:
 		{
-			Appointment newAppointment;
+			int id, patID, docID;
+			string date;
 			cout << "Enter appointment ID: ";
-			cin >> newAppointment.id;
+			cin >> id;
 			cout << "Enter patient ID: ";
-			cin >> newAppointment.patient;
+			cin >> patID;
 			cout << "Enter doctor ID: ";
-			cin >> newAppointment.doctor;
-
-			appointmentList.add(newAppointment);
+			cin >> docID;
+			cout << "Enter appointment date (yyyy-mm-dd): ";
+			cin >> date;
+			while (!validateDate(date))
+			{
+				cout << "Invalid date format. Please enter again (yyyy-mm-dd): ";
+				cin >> date;
+			}
+			Appointment newAppointment(id, patID, docID, date);
+			appointmentList->addAppointment(newAppointment, doctorList, patientList);
 			break;
 		}
 		case 4:
-		{
+			patientList->displayPatients();
+			break;
+		case 5:
+			doctorList->displayDoctors();
+			break;
+		case 6:
+			appointmentList->displayAppointments();
+			break;
+		case 7:
+			cout << "Exiting program." << endl;
+			break;
+		default:
+			cout << "Invalid choice, please try again." << endl;
 			break;
 		}
-			//			case 5:
-			//				patientList.print();
-			//				break;
-			//			case 6:
-			//				patientList.print();
-			//				break;
-		case 7:
-			cout << "Exited the program!" << endl;
-			return 0;
-		default:
-			cout << "Invalid choice. Please try again." << endl;
-		}
-	}
+	} while (choice != 7);
 
 	return 0;
 }
