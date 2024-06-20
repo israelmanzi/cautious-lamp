@@ -2,7 +2,6 @@
 
 git pull origin main -q
 if %errorlevel% ne 0 (
-    echo Git pull failed.
     exit /b 1
 )
 
